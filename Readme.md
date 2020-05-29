@@ -27,9 +27,11 @@ tasks
 </pre>
 status column is an Enum where 1 - Active, 2 - Completed, 3 - Archieved
 
-Create following APIs:
+# Create following APIs:
 
-POST /user/login
+
+## POST /user/login
+
 This API will accept email and password and check against the user database if the credentials are valid or not.
 
 If the user is available and credentials are correct, then it should issue JWT token which will be later used for authorisation of user.
