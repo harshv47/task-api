@@ -1,4 +1,5 @@
 const express = require('express')
+
 const Task = require('../model/task')
 const auth = require('../middleware/authorization')
 
@@ -7,8 +8,10 @@ const router = new express.Router()
 router.get('/task/list', auth ,async (req, res) => {
     try {
         
+        //  Finding all the tasks created by the user
         const tasks = await Task.find({ uId: req.user._id })
 
+        //  If the previous operation was a scuccess, then send an affirmative reply
         res.status(202).send({
             error: false,
             tasks
@@ -25,13 +28,16 @@ router.get('/task/list', auth ,async (req, res) => {
 router.post('/task/create', auth ,async (req, res) => {
     try{
 
+        //  Creating a new object from the Task schema
         const task = new Task()
         
+        //  Defining the properties of the newly created task
         task.uId = req.user._id
         task.dueOn = req.body.dueOn
         task.title = req.body.title
         task.status = req.body.status
 
+        //  Saving the task to the task collection
         await task.save()
 
         res.status(200).send({
@@ -48,9 +54,11 @@ router.post('/task/create', auth ,async (req, res) => {
 
 router.get('/task/:id', auth ,async (req, res) => {
     
+    //  Getting the ID from the parameter
     const _id = req.params.id
     
     try {
+        //  Searching the collection for a task with same ID
         const task = await Task.findById(_id)
 
         if (!task) {
@@ -73,6 +81,8 @@ router.get('/task/:id', auth ,async (req, res) => {
 })
 
 router.patch('/task/:id/complete', auth, async (req, res) => {
+    
+    //  These lines are for only allowing updating the status field and will result in an error if any other field is changed.
     const updates = Object.keys(req.body)
     const allowedUpdates = ['status']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -85,8 +95,11 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
     }
 
     try {
+
+        //  Finding the task by using the input id parameter
         const task = await Task.findById(req.params.id)
 
+        //  In the enum status, '2' means a task has been completed
         task.status = '2'
         await task.save()
         
@@ -107,6 +120,8 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
 })
 
 router.patch('/task/:id/archive', auth, async (req, res) => {
+
+    //  Similar to the above case, change in only status field is allowed
     const updates = Object.keys(req.body)
     const allowedUpdates = ['status']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -119,8 +134,11 @@ router.patch('/task/:id/archive', auth, async (req, res) => {
     }
 
     try {
+
+        //  Finding task by using the input ID parameter
         const task = await Task.findById(req.params.id)
 
+        //  In the enum status, '3' means a task has been completed
         task.status = '3'
         await task.save()
         
