@@ -54,13 +54,14 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.methods.generateAuthToken = async function () {
+    
     const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET, {
         expiresIn: '1 day'
     })
     
     this.apiToken = token
     const decoded = jwt.decode(token)
-    console.log(decoded.exp)
+    
     this.apiExpiresAt = decoded.exp
     await this.save()
 
