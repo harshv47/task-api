@@ -39,29 +39,38 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please provide a password'],
         trim: true,
         minlength: 7,
+        //  To make the password more secure, made it mandatory to accept a tough password
         validator: function(value) {
+            //  Using mongoose way of matching regex and password
             return /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/.test(value);
           },
           message: 'The password must contain at least one lowercase, one uppercase and one number'
     },
-    apiToken: { // If the user has multiple tokens
+    apiToken: {
+        //  I had thought of this part being a token array rather just a single value
         type: String
     },
     apiExpiresAt: {
+        //  I had tried repetedly to store apiExpiressAt in unix timestamp
+        //  So ultimately I stored it as String and whenever it is required, I use parseInt() to convert it back
         type: String,
+        //  This setter doesn't work
         //set: d => new Date(d * 1000)
     }
 })
 
 userSchema.methods.generateAuthToken = async function () {
     
+    //  I was confused on whether I should use the token generated from the createapiToken, so I created new ones.
     const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET, {
         expiresIn: '1 day'
     })
     
+    //  Setting token property
     this.apiToken = token
     const decoded = jwt.decode(token)
     
+    //  Setting ExpiresAt property
     this.apiExpiresAt = decoded.exp
     await this.save()
 
@@ -69,14 +78,20 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 userSchema.statics.findByCredentials = async (email, password) => {
+
+    //  Finding the user using email first
     const user = await User.findOne({ email })
     
+    //  Checking if the user exists
     if (!user) {
         throw new Error('Invalid Credentials')
     }
 
+    //  Comparing the password of the matched email
+    //  Storing base64 encypted form of password
     const isMatch = await bcrypt.compare(password, user.password)
 
+    //  Checking if the password is the same
     if (!isMatch) {
         throw new Error('Invalid Credentials')
     }
@@ -87,9 +102,11 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 
 // Hash the plain text password before saving
+//  This middleware runs before the save operation in mongoose
 userSchema.pre('save', async function (next) {
 
     if (this.isModified('password')) {
+        //  Runing it for 7 rounds
         this.password = await bcrypt.hash(this.password, 7)
     }
 

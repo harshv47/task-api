@@ -17,6 +17,7 @@ const Task = mongoose.model('Task', {
     },
     dueOn: {
         type: String
+        //  I have considered the due date of task to be optional, as the user might not have one in mind while creating it
     },
     title: {
         type: String,
@@ -25,6 +26,7 @@ const Task = mongoose.model('Task', {
     },
     status: {
         type: String,
+        //  Using enum validator
         enum: ['1', '2', '3'],
         default: '1'
     }
