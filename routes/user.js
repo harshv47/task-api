@@ -2,6 +2,7 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 
 const User = require('../model/user')
+const Tokens = require('../model/apiToken')
 const auth = require('../middleware/authorization')
 
 
@@ -68,18 +69,28 @@ router.post('/user/createApiToken', async (req, res) => {
     try {   
 
         //  Checking to see if the token has already expired or not
-        if(parseInt(req.body.expiresIn) <= Date.now()/1000){
+        if(parseInt(req.body.expiresAt) <= Date.now()/1000){
             return res.status(400).send({ error: true, message: "Token is expired" })
         }
         
         //  Using exipiration unix timestamp as the key for signing jwt token
-        const token = jwt.sign({ _id: req.body.expiresIn }, process.env.JWT_SECRET)
-        token.exp = parseInt(req.body.expiresIn)
+        const token = jwt.sign({ _id: req.body.expiresAt }, process.env.JWT_SECRET)
+        token.exp = parseInt(req.body.expiresAt)
+
+        //  Creating the entry for tokens collection
+        const apiToken = new Tokens()
+        apiToken.apiToken = token
+        apiToken.apiExpiresAt = req.body.expiresAt
+
+        await apiToken.save()
 
         res.send({
+            error: false,
             apiToken: token
         })
+
     } catch (e) {
+        console.log(e)
         res.status(400).send({
             error: true,
             message: "Bad Request"

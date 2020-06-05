@@ -9,7 +9,7 @@ router.get('/task/list', auth ,async (req, res) => {
     try {
         
         //  Finding all the tasks created by the user
-        const tasks = await Task.find({ uId: req.user._id })
+        const tasks = await Task.find({ uId: req._id })
 
         //  If the previous operation was a scuccess, then send an affirmative reply
         res.status(202).send({
@@ -32,7 +32,7 @@ router.post('/task/create', auth ,async (req, res) => {
         const task = new Task()
         
         //  Defining the properties of the newly created task
-        task.uId = req.user._id
+        task.uId = req._id
         task.dueOn = req.body.dueOn
         task.title = req.body.title
         task.status = req.body.status
