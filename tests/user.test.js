@@ -173,3 +173,13 @@ test('User creating a new api token without expiry date', async () =>{
         .send()
         .expect(400)
 })
+
+test('User creating a new API token with backdated expiry date', async () => {
+    await request(app)
+        .post('/user/createApiToken')
+        .send({
+            'expiresAt': (parseInt(Date.now()/1000) - 2000).toString()
+        })
+        .expect(400)
+})
+

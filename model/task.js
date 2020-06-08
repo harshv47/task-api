@@ -16,7 +16,7 @@ const Task = mongoose.model('Task', {
         required: [true, 'User ID of the task issuer is required']
     },
     dueOn: {
-        type: String
+        type: Number
         //  I have considered the due date of task to be optional, as the user might not have one in mind while creating it
     },
     title: {

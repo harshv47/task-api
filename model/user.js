@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     },
     apiExpiresAt: {
         //  So I stored it as String and whenever it is required, I use parseInt() to convert it back
-        type: String,
+        type: Number,
         //  This setter doesn't work
         //set: d => new Date(d * 1000)
     }

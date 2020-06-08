@@ -30,20 +30,20 @@ const User1 = {
     'email': 'sample@example.com',
     'password': 'S1mple@2@',
     'apiToken': token,
-    'apiExpiresAt': (parseInt(Date.now()/1000) + 2000).toString(),
+    'apiExpiresAt': (parseInt(Date.now()/1000) + 2000),
 }
 
 
 const Task1 = {
     '_id': Task1Id,
     'uId': User1Id,
-    'dueDate': (parseInt(Date.now()/1000) + 2000).toString(),
+    'dueOn': (parseInt(Date.now()/1000) + 2000),
     'title': 'Sample Task',
     'status': '1'
 }
 
 const Task2 = {
-    'dueOn': (Date.now()/1000 + 2000).toString(),
+    'dueOn': (Date.now()/1000 + 2000),
     'title': 'Write Code',
     'status': '1'
 }

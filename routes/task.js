@@ -33,7 +33,7 @@ router.post('/task/create', auth ,async (req, res) => {
         
         //  Defining the properties of the newly created task
         task.uId = req._id
-        task.dueOn = req.body.dueOn
+        task.dueOn = parseInt(req.body.dueOn)
         task.title = req.body.title
         task.status = req.body.status
 
