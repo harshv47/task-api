@@ -32,7 +32,7 @@ const authCheck = async (req, res, next) => {
         req._id = (!user)?apiToken._id:user._id
         next()
     } catch (e) {
-        console.log(e)
+
         res.status(401).send({ 
             error: true,
             message: 'Authentication Error' 

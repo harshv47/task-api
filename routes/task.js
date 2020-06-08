@@ -12,7 +12,7 @@ router.get('/task/list', auth ,async (req, res) => {
         const tasks = await Task.find({ uId: req._id })
 
         //  If the previous operation was a scuccess, then send an affirmative reply
-        res.status(202).send({
+        res.status(200).send({
             error: false,
             tasks
         })
@@ -68,7 +68,7 @@ router.get('/task/:id', auth ,async (req, res) => {
             })
         }
 
-        res.send({
+        res.status(200).send({
             error: false,
             task
         })
@@ -81,23 +81,18 @@ router.get('/task/:id', auth ,async (req, res) => {
 })
 
 router.patch('/task/:id/complete', auth, async (req, res) => {
-    
-    //  These lines are for only allowing updating the status field and will result in an error if any other field is changed.
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['status']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
-
-    if (!isValidOperation) {
-        return res.status(400).send({
-            error: true, 
-            message: 'Invalid Operation' 
-           })
-    }
 
     try {
 
         //  Finding the task by using the input id parameter
         const task = await Task.findById(req.params.id)
+
+        if(!task){
+            return res.status(404).send({
+                error: true,
+                message: 'Task not found'
+            })
+        }
 
         //  In the enum status, '2' means a task has been completed
         task.status = '2'
@@ -121,22 +116,17 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
 
 router.patch('/task/:id/archive', auth, async (req, res) => {
 
-    //  Similar to the above case, change in only status field is allowed
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['status']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
-
-    if (!isValidOperation) {
-        return res.status(400).send({
-             error: true, 
-             message: 'Invalid Operation' 
-            })
-    }
-
     try {
 
         //  Finding task by using the input ID parameter
         const task = await Task.findById(req.params.id)
+
+        if(!task){
+            return res.status(404).send({
+                error: true,
+                message: 'Task not found'
+            })
+        }
 
         //  In the enum status, '3' means a task has been completed
         task.status = '3'

@@ -37,21 +37,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         trim: true,
-        minlength: 7,
-        //  To make the password more secure, made it mandatory to accept a tough password
-        validator: function(value) {
-            //  Using mongoose way of matching regex and password
-            return /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/.test(value);
-          },
-          message: 'The password must contain at least one lowercase, one uppercase and one number'
+        minlength: 7
     },
     apiToken: {
         //  I had thought of this part being a token array rather just a single value
         type: String
     },
     apiExpiresAt: {
-        //  I had tried repetedly to store apiExpiressAt in unix timestamp
-        //  So ultimately I stored it as String and whenever it is required, I use parseInt() to convert it back
+        //  So I stored it as String and whenever it is required, I use parseInt() to convert it back
         type: String,
         //  This setter doesn't work
         //set: d => new Date(d * 1000)

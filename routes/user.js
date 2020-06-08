@@ -10,6 +10,16 @@ const router = new express.Router()
 
 router.post('/user/signup', async (req, res) => {
 
+    //  Checking password strength
+    passreg = new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$")
+
+    if(!passreg.test(req.body.password)){
+        return res.status(400).send({
+            error: false,
+            message: 'The password must contain at least one lowercase, one uppercase and one number'
+        })
+    }
+
     //  Creating a user object using the User schema
     const user = new User(req.body)
     
@@ -50,7 +60,7 @@ router.post('/user/login', async (req, res) => {
             })
         }
 
-        res.send({
+        res.status(202).send({
             error: false,
             message: "Logged in Successfully",
             //  Sending the apiToken, so that the user could use the Bearer Token
@@ -90,7 +100,7 @@ router.post('/user/createApiToken', async (req, res) => {
         })
 
     } catch (e) {
-        console.log(e)
+        
         res.status(400).send({
             error: true,
             message: "Bad Request"
