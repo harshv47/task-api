@@ -1,5 +1,4 @@
-const mongoose = require('mongoose')
-
+const mongoose = require('mongoose');
 
 // apiToken
 // {
@@ -8,26 +7,22 @@ const mongoose = require('mongoose')
 //     apiExpiresAt: 1590644190     //  Check if apiExpiresAt is added automatically
 // }
 
-
-
 const apiSchema = new mongoose.Schema({
-    
-    apiToken: {
-        //  I had thought of this part being a token array rather just a single value
-        type: String,
-        required: true
-    },
-    apiExpiresAt: {
-        //  I had tried repetedly to store apiExpiressAt in unix timestamp
-        //  So ultimately I stored it as String and whenever it is required, I use parseInt() to convert it back
-        type: String,
-        required: true
-        //  This setter doesn't work
-        //set: d => new Date(d * 1000)
-    }
 
-})
+  apiToken: {
+    //  I had thought of this part being a token array rather just a single value
+    type: String,
+    required: true,
+  },
+  apiExpiresAt: {
+    type: Number,
+    required: true,
+    //  This setter doesn't work
+    // set: d => new Date(d * 1000)
+  },
 
-const Tokens = mongoose.model('Tokens', apiSchema)
+});
 
-module.exports = Tokens
+const Tokens = mongoose.model('Tokens', apiSchema);
+
+module.exports = Tokens;
