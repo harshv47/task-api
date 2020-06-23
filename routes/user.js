@@ -7,7 +7,118 @@ const User = require('../model/user');
 const Tokens = require('../model/apiToken');
 
 const router = new express.Router();
+/**
+ * @swagger
+ *
+ * definitions:
+ *   NewUser:
+ *     type: json
+ *     required:
+ *       - name
+ *       - email
+ *       - password
+ *     properties:
+ *       name:
+ *         type: string
+ *       email:
+ *         type: string
+ *         format: email
+ *       password:
+ *         type: string
+ *         format: password
+ *       apiToken:
+ *         type: string
+ *       apiExpiresAt:
+ *         type: number
+ *   Error:
+ *     type: json
+ *     required:
+ *       - error
+ *       - message
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       message:
+ *         type: string
+ *   Success:
+ *     type: json
+ *     required:
+ *       - error
+ *       - message
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       message:
+ *         type: string
+ *   SuccessReturn:
+ *     type: json
+ *     required:
+ *       - error
+ *       - token
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       token:
+ *         type: string
+ *   SuccessLogin:
+ *     type: json
+ *     required:
+ *       - error
+ *       - message
+ *       - token
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       message:
+ *         type: string
+ *       token:
+ *         type: string
+ */
 
+/**
+ * @swagger
+ *
+ * /user/signup:
+ *   post:
+ *     description: Sign up to the app
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Name
+ *         description: User email to use for signup.
+ *         in: json
+ *         required: true
+ *         type: string
+ *       - email: "sample@example.com"
+ *         description: User email to use for login.
+ *         in: json
+ *         required: true
+ *         type: string
+ *       - password: password
+ *         description: User's password.
+ *         in: json
+ *         required: true
+ *         type: string
+ *     responses:
+ *       202:
+ *         description: Logged in Successfully
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/SuccessReturn'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       400:
+ *         description: Bad Request
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.post('/user/signup', async (req, res) => {
   //  Checking password strength
   const passreg = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$');
@@ -44,7 +155,6 @@ router.post('/user/signup', async (req, res) => {
       token,
     });
   } catch (e) {
-    //console.log(e);
     res.status(400).send({
       error: true,
       message: 'Bad Request',
@@ -52,6 +162,46 @@ router.post('/user/signup', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /user/login:
+ *   post:
+ *     description: Login to the app
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - email: "sample@example.com"
+ *         description: User email to use for login.
+ *         in: json
+ *         required: true
+ *         type: string
+ *       - password: password
+ *         description: User's password.
+ *         in: json
+ *         required: true
+ *         type: string
+ *     responses:
+ *       responses:
+ *       202:
+ *         description: Logged in Successfully
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/SuccessLogin'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       400:
+ *         description: Bad Request
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.post('/user/login', async (req, res) => {
   try {
     //  Finding the user by there credentials
@@ -79,6 +229,34 @@ router.post('/user/login', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /user/createApiToken:
+ *   post:
+ *     description: Create an API token to use in api mode
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - expiresAt: time as a UTC timestamp
+ *         description: User email to use for signup.
+ *         in: json
+ *         required: true
+ *         type: string
+ *     responses:
+ *       202:
+ *         description: API key saved
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/SuccessReturn'
+ *       400:
+ *         description: Bad Request
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.post('/user/createApiToken', async (req, res) => {
   try {
     // Checking to see if the user has provided expiry date

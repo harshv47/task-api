@@ -8,6 +8,96 @@ const auth = require('../middleware/authorization');
 
 const router = new express.Router();
 
+/**
+ * @swagger
+ *
+ * definitions:
+ *   NewUser:
+ *     type: json
+ *     required:
+ *       - uId
+ *       - title
+ *     properties:
+ *       uId:
+ *         type: string
+ *       dueOn:
+ *         type: number
+ *       title:
+ *         type: string
+ *       status:
+ *         type: enum
+ *         format: ['1', '2', '3']
+ *   Error:
+ *     type: json
+ *     required:
+ *       - error
+ *       - message
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       message:
+ *         type: string
+ *   Success:
+ *     type: json
+ *     required:
+ *       - error
+ *       - message
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       message:
+ *         type: string
+ *   SuccessList:
+ *     type: json
+ *     required:
+ *       - error
+ *       - tasks
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       tasks:
+ *         type: array
+ *   SuccessId:
+ *     type: json
+ *     required:
+ *       - error
+ *       - task
+ *     properties:
+ *       error:
+ *         type: boolean
+ *       task:
+ *         type: json
+ */
+
+/**
+ * @swagger
+ *
+ * /task/list:
+ *   get:
+ *     description: List all tasks of the user
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: Returns all the tasks as an array
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/SuccessList'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.get('/task/list', auth, async (req, res) => {
   try {
     //  Finding all the tasks created by the user
@@ -26,6 +116,50 @@ router.get('/task/list', auth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /task/create:
+ *   post:
+ *     description: Create new tasks
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - task: Title
+ *         description: Title of the Task.
+ *         in: json
+ *         required: true
+ *         type: string
+ *       - dueOn: 1591790140
+ *         description: The due time of the task in UTC timestamp
+ *         in: json
+ *         required: true
+ *         type: number
+ *       - status: 1
+ *         description: The status of the task, 1, 2 & 3 is Incomplete, Completed and Archived resp.
+ *         in: json
+ *         required: true
+ *         type: enum/number
+ *     responses:
+ *       200:
+ *         description: The task has been created
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Success'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.post('/task/create', auth, async (req, res) => {
   try {
     //  Creating a new object from the Task schema
@@ -52,6 +186,35 @@ router.post('/task/create', auth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /task/;id:
+ *   get:
+ *     description: Create new tasks
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: The task has been created
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/SuccessId'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.get('/task/:id', auth, async (req, res) => {
   //  Getting the ID from the parameter
   const _id = req.params.id;
@@ -79,6 +242,35 @@ router.get('/task/:id', auth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /task/;id/complete:
+ *   get:
+ *     description: Set the task as completed
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: The task has been marked as completed
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Success'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.patch('/task/:id/complete', auth, async (req, res) => {
   try {
     //  Finding the task by using the input id parameter
@@ -111,6 +303,35 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *
+ * /task/;id/archive:
+ *   get:
+ *     description: Set the task as archived
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: The task has been marked as arcived
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Success'
+ *       404:
+ *         description: Invalid credentials
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         schema:
+ *           type: json
+ *           items:
+ *             $ref: '#/definitions/Error'
+ */
 router.patch('/task/:id/archive', auth, async (req, res) => {
   try {
     //  Finding task by using the input ID parameter
