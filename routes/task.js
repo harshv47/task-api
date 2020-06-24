@@ -12,23 +12,24 @@ const router = new express.Router();
  * @swagger
  *
  * definitions:
- *   NewUser:
- *     type: json
+ *   TaskCreate:
+ *     type: object
  *     required:
- *       - uId
  *       - title
  *     properties:
- *       uId:
+ *       title:
  *         type: string
  *       dueOn:
  *         type: number
- *       title:
- *         type: string
  *       status:
- *         type: enum
- *         format: ['1', '2', '3']
+ *         type: string
+ *         enum: [1, 2, 3]
+ *     example:
+ *       title: Sampple Note
+ *       dueOn: 1591990140
+ *       status: 1
  *   Error:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - message
@@ -37,8 +38,11 @@ const router = new express.Router();
  *         type: boolean
  *       message:
  *         type: string
+ *     example:
+ *       error: true
+ *       message: Message describing the error
  *   Success:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - message
@@ -47,8 +51,11 @@ const router = new express.Router();
  *         type: boolean
  *       message:
  *         type: string
+ *     example:
+ *       error: false
+ *       message: Message describing the success
  *   SuccessList:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - tasks
@@ -57,8 +64,11 @@ const router = new express.Router();
  *         type: boolean
  *       tasks:
  *         type: array
+ *     example:
+ *       error: false
+ *       tasks: An array with all the tasks made by the user
  *   SuccessId:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - task
@@ -66,7 +76,10 @@ const router = new express.Router();
  *       error:
  *         type: boolean
  *       task:
- *         type: json
+ *         type: application/json
+ *     example:
+ *       error: false
+ *       task: The task requested as a json
  */
 
 /**
@@ -74,29 +87,33 @@ const router = new express.Router();
  *
  * /task/list:
  *   get:
- *     description: List all tasks of the user
- *     produces:
- *       - application/json
+ *     summary: List all the tasks of the user
+ *     description: The request must include Bearer Token in Auth header
  *     parameters:
+ *      - in: header
+ *        name: Security
+ *        schema:
+ *          type: string
+ *        required: true
  *     responses:
  *       200:
  *         description: Returns all the tasks as an array
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/SuccessList'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/SuccessList'
  *       404:
  *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  *       500:
  *         description: Internal Server Error
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.get('/task/list', auth, async (req, res) => {
   try {
@@ -121,44 +138,40 @@ router.get('/task/list', auth, async (req, res) => {
  *
  * /task/create:
  *   post:
- *     description: Create new tasks
- *     produces:
- *       - application/json
+ *     summary: Create a new task
+ *     description: The request must include Bearer Token in Auth header
  *     parameters:
- *       - task: Title
- *         description: Title of the Task.
- *         in: json
- *         required: true
- *         type: string
- *       - dueOn: 1591790140
- *         description: The due time of the task in UTC timestamp
- *         in: json
- *         required: true
- *         type: number
- *       - status: 1
- *         description: The status of the task, 1, 2 & 3 is Incomplete, Completed and Archived resp.
- *         in: json
- *         required: true
- *         type: enum/number
+ *      - in: header
+ *        name: Security
+ *        schema:
+ *          type: string
+ *          format: uuid
+ *        required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/definitions/TaskCreate'
  *     responses:
  *       200:
  *         description: The task has been created
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Success'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Success'
  *       404:
  *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  *       500:
  *         description: Internal Server Error
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.post('/task/create', auth, async (req, res) => {
   try {
@@ -167,9 +180,13 @@ router.post('/task/create', auth, async (req, res) => {
 
     //  Defining the properties of the newly created task
     task.uId = req._id;
-    task.dueOn = parseInt(req.body.dueOn);
+
+    if (req.body.dueOn) task.dueOn = parseInt(req.body.dueOn);
+
     task.title = req.body.title;
-    task.status = req.body.status;
+
+    if (req.body.status) task.status = req.body.status;
+    else task.status = '1';
 
     //  Saving the task to the task collection
     await task.save();
@@ -189,31 +206,36 @@ router.post('/task/create', auth, async (req, res) => {
 /**
  * @swagger
  *
- * /task/;id:
+ * /task/:id:
  *   get:
- *     description: Create new tasks
- *     produces:
- *       - application/json
+ *     summary: List a particular task of the user
+ *     description: The request must include Bearer Token in Auth header
  *     parameters:
+ *      - in: header
+ *        name: Security
+ *        schema:
+ *          type: string
+ *          format: uuid
+ *        required: true
  *     responses:
  *       200:
  *         description: The task has been created
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/SuccessId'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/SuccessId'
  *       404:
  *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  *       500:
  *         description: Internal Server Error
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.get('/task/:id', auth, async (req, res) => {
   //  Getting the ID from the parameter
@@ -245,31 +267,36 @@ router.get('/task/:id', auth, async (req, res) => {
 /**
  * @swagger
  *
- * /task/;id/complete:
- *   get:
- *     description: Set the task as completed
- *     produces:
- *       - application/json
+ * /task/:id/complete:
+ *   patch:
+ *     summary: Mark a particular task of the user as Completed
+ *     description: The request must include Bearer Token in Auth header
  *     parameters:
+ *      - in: header
+ *        name: Security
+ *        schema:
+ *          type: string
+ *          format: uuid
+ *        required: true
  *     responses:
  *       200:
  *         description: The task has been marked as completed
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Success'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Success'
  *       404:
  *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  *       500:
  *         description: Internal Server Error
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.patch('/task/:id/complete', auth, async (req, res) => {
   try {
@@ -306,19 +333,24 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
 /**
  * @swagger
  *
- * /task/;id/archive:
- *   get:
- *     description: Set the task as archived
- *     produces:
- *       - application/json
+ * /task/:id/archive:
+ *   patch:
+ *     summary: Mark a particular task of the user as Archived
+ *     description: The request must include Bearer Token in Auth header
  *     parameters:
+ *      - in: header
+ *        name: Security
+ *        schema:
+ *          type: string
+ *          format: uuid
+ *        required: true
  *     responses:
  *       200:
- *         description: The task has been marked as arcived
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Success'
+ *         description: The task has been marked as archived
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Success'
  *       404:
  *         description: Invalid credentials
  *         schema:
@@ -327,10 +359,10 @@ router.patch('/task/:id/complete', auth, async (req, res) => {
  *             $ref: '#/definitions/Error'
  *       500:
  *         description: Internal Server Error
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.patch('/task/:id/archive', auth, async (req, res) => {
   try {

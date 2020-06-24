@@ -11,8 +11,8 @@ const router = new express.Router();
  * @swagger
  *
  * definitions:
- *   NewUser:
- *     type: json
+ *   User:
+ *     type: object
  *     required:
  *       - name
  *       - email
@@ -22,16 +22,36 @@ const router = new express.Router();
  *         type: string
  *       email:
  *         type: string
- *         format: email
  *       password:
  *         type: string
- *         format: password
- *       apiToken:
+ *     example:
+ *       name: Sample Name
+ *       email: sample@example.com
+ *       password: S1mpl3@1
+ *   UserLogin:
+ *     type: object
+ *     required:
+ *       - email
+ *       - password
+ *     properties:
+ *       email:
  *         type: string
- *       apiExpiresAt:
+ *       password:
+ *         type: string
+ *     example:
+ *       email: sample@example.com
+ *       password: S1mpl3@1
+ *   ApiToken:
+ *     type: object
+ *     required:
+ *       - expiresAt
+ *     properties:
+ *       expiresAt:
  *         type: number
+ *     example:
+ *       expiresAt: 2595532378
  *   Error:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - message
@@ -40,18 +60,11 @@ const router = new express.Router();
  *         type: boolean
  *       message:
  *         type: string
- *   Success:
- *     type: json
- *     required:
- *       - error
- *       - message
- *     properties:
- *       error:
- *         type: boolean
- *       message:
- *         type: string
+ *     example:
+ *       error: true
+ *       message: Message describing the error
  *   SuccessReturn:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - token
@@ -60,8 +73,11 @@ const router = new express.Router();
  *         type: boolean
  *       token:
  *         type: string
+ *     example:
+ *       error: false
+ *       message: Message describing the success
  *   SuccessLogin:
- *     type: json
+ *     type: object
  *     required:
  *       - error
  *       - message
@@ -73,6 +89,9 @@ const router = new express.Router();
  *         type: string
  *       token:
  *         type: string
+ *     example:
+ *       error: false
+ *       message: Logged in Succesfully
  */
 
 /**
@@ -80,48 +99,37 @@ const router = new express.Router();
  *
  * /user/signup:
  *   post:
- *     description: Sign up to the app
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: Name
- *         description: User email to use for signup.
- *         in: json
- *         required: true
- *         type: string
- *       - email: "sample@example.com"
- *         description: User email to use for login.
- *         in: json
- *         required: true
- *         type: string
- *       - password: password
- *         description: User's password.
- *         in: json
- *         required: true
- *         type: string
+ *     requestBody:
+ *       description: Signs up a new user
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/definitions/User'
  *     responses:
- *       202:
- *         description: Logged in Successfully
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/SuccessReturn'
- *       404:
- *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *       201:
+ *         description: Signed up Successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/SuccessReturn'
  *       400:
  *         description: Bad Request
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.post('/user/signup', async (req, res) => {
   //  Checking password strength
   const passreg = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$');
+
+  if (req.body === {}) {
+    return res.status(400).send({
+      error: true,
+      message: 'Empty Request',
+    });
+  }
 
   if (!passreg.test(req.body.password)) {
     return res.status(400).send({
@@ -167,40 +175,32 @@ router.post('/user/signup', async (req, res) => {
  *
  * /user/login:
  *   post:
- *     description: Login to the app
- *     produces:
- *       - application/json
- *     parameters:
- *       - email: "sample@example.com"
- *         description: User email to use for login.
- *         in: json
- *         required: true
- *         type: string
- *       - password: password
- *         description: User's password.
- *         in: json
- *         required: true
- *         type: string
+ *     requestBody:
+ *       description: Logs in an existing user
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/definitions/UserLogin'
  *     responses:
- *       responses:
  *       202:
  *         description: Logged in Successfully
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/SuccessLogin'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/SuccessLogin'
  *       404:
  *         description: Invalid credentials
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  *       400:
  *         description: Bad Request
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.post('/user/login', async (req, res) => {
   try {
@@ -234,28 +234,26 @@ router.post('/user/login', async (req, res) => {
  *
  * /user/createApiToken:
  *   post:
- *     description: Create an API token to use in api mode
- *     produces:
- *       - application/json
- *     parameters:
- *       - expiresAt: time as a UTC timestamp
- *         description: User email to use for signup.
- *         in: json
- *         required: true
- *         type: string
+ *     requestBody:
+ *       description: Creates a new API token and returns it
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/definitions/ApiToken'
  *     responses:
  *       202:
  *         description: API key saved
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/SuccessReturn'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/SuccessReturn'
  *       400:
  *         description: Bad Request
- *         schema:
- *           type: json
- *           items:
- *             $ref: '#/definitions/Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.post('/user/createApiToken', async (req, res) => {
   try {

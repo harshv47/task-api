@@ -3,8 +3,20 @@ const Tokens = require('../model/apiToken');
 
 const authCheck = async (req, res, next) => {
   try {
+    // For swagger, Authorization is reserved
+    // So using Security, without the Bearer part
+    const tokenS = req.header('Security');
     // Using Bearer Token, so removing "Bearer " from the Auth header
-    const token = req.header('Authorization').replace('Bearer ', '');
+    const tokenA = req.header('Authorization');
+
+    if (!tokenA && !tokenS) {
+      return res.status(400).send({
+        error: true,
+        message: 'No Authentication token',
+      });
+    }
+
+    const token = (!tokenA) ? (tokenS) : (tokenA.replace('Bearer ', ''));
 
     //  Finding the user in the user collection
     const user = await User.findOne({ apiToken: token });
